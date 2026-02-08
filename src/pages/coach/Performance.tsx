@@ -1,14 +1,17 @@
 import Layout from '../../components/Layout';
 import Header from '../../components/Header';
 import { coachNavItems } from '../../constants/navigation';
+import { useNavigate } from 'react-router-dom';
 
 export default function Performance() {
+  const navigate = useNavigate();
+
   return (
     <Layout navItems={coachNavItems}>
       <Header
         title="Desempenho"
         leftAction={
-          <div className="flex items-center text-accent-blue cursor-pointer">
+          <div onClick={() => navigate(-1)} className="flex items-center text-accent-blue cursor-pointer">
             <span className="material-symbols-outlined !text-[24px]">chevron_left</span>
             <span className="text-[17px]">Voltar</span>
           </div>
@@ -77,7 +80,7 @@ export default function Performance() {
             ))}
           </div>
 
-          <button className="w-full mt-8 bg-black text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 active:opacity-70 transition-all">
+          <button className="w-full mt-8 bg-black text-white font-bold h-12 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all">
             <span className="material-symbols-outlined text-[20px]">edit</span>
             Editar Desempenho
           </button>

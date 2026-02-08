@@ -1,8 +1,10 @@
 import Layout from '../../components/Layout';
-
 import { studentNavItems } from '../../constants/navigation';
+import { useAppContext } from '../../context/AppContext';
 
 export default function Agenda() {
+  const { events } = useAppContext();
+
   return (
     <Layout navItems={studentNavItems}>
       <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-md px-4 pt-6 pb-2 border-b border-gray-100">
@@ -30,7 +32,7 @@ export default function Agenda() {
           <p className="text-white text-xs font-semibold">Tudo</p>
         </div>
         {['Treinos', 'Jogos'].map(f => (
-          <div key={f} className="flex h-8 shrink-0 items-center justify-center rounded-full bg-gray-100 border border-gray-200 px-5">
+          <div key={f} className="flex h-8 shrink-0 items-center justify-center rounded-full bg-gray-100 border border-gray-200 px-5 cursor-pointer">
             <p className="text-secondary text-xs font-medium">{f}</p>
           </div>
         ))}
@@ -39,48 +41,36 @@ export default function Agenda() {
       <main className="px-4 space-y-6">
         <h3 className="text-secondary text-xl font-bold tracking-tight">Próximos Treinos</h3>
 
-        <div className="relative pl-14">
-          <div className="absolute left-0 top-0 h-full flex flex-col items-center">
-            <span className="text-xs font-bold text-secondary">08:00</span>
-            <div className="w-px flex-1 bg-gray-200 my-2"></div>
-          </div>
-          <div className="bg-white border border-gray-100 rounded-2xl p-4 flex flex-col gap-3 shadow-sm">
-            <div className="flex justify-between items-start">
-              <div>
-                <span className="inline-block px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase tracking-wider mb-1">Treino Coletivo</span>
-                <h4 className="text-secondary font-bold text-base">Fundamentos e Tática</h4>
+        {events.map((event) => (
+          <div key={event.id} className="relative pl-14">
+            <div className="absolute left-0 top-0 h-full flex flex-col items-center">
+              <span className="text-xs font-bold text-secondary">{event.time}</span>
+              <div className="w-px flex-1 bg-gray-200 my-2"></div>
+            </div>
+            <div className={`rounded-2xl p-4 flex flex-col gap-3 shadow-sm border ${event.type === 'Competição' ? 'bg-secondary text-white' : 'bg-white border-gray-100'}`}>
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className={`inline-block px-2 py-0.5 rounded uppercase tracking-wider mb-1 text-[10px] font-bold ${event.type === 'Competição' ? 'bg-primary text-white' : 'bg-primary/10 text-primary'}`}>
+                    {event.type}
+                  </span>
+                  <h4 className="font-bold text-base">{event.title}</h4>
+                </div>
+                <span className={`material-symbols-outlined text-xl ${event.type === 'Competição' ? 'text-primary' : 'text-primary'}`}>
+                  {event.type === 'Competição' ? 'trophy' : 'sports_soccer'}
+                </span>
               </div>
-              <span className="material-symbols-outlined text-primary text-xl">sports_soccer</span>
-            </div>
-            <div className="space-y-1 text-gray-500 text-xs font-medium">
-              <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">location_on</span> Quadra 02 • Sede Principal</div>
-              <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">person</span> Prof. Ricardo Silva</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative pl-14">
-          <div className="absolute left-0 top-0 h-full flex flex-col items-center">
-            <span className="text-xs font-bold text-secondary">14:30</span>
-            <div className="w-px flex-1 bg-gray-200 my-2"></div>
-          </div>
-          <div className="bg-secondary rounded-2xl p-4 flex flex-col gap-3 shadow-lg text-white">
-            <div className="flex justify-between items-start">
-              <div>
-                <span className="inline-block px-2 py-0.5 bg-primary text-white text-[10px] font-bold rounded uppercase tracking-wider mb-1">Amistoso</span>
-                <h4 className="font-bold text-base">vs. Academia Real</h4>
+              <div className={`space-y-1 text-xs font-medium ${event.type === 'Competição' ? 'text-gray-300' : 'text-gray-500'}`}>
+                <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">location_on</span> {event.location}</div>
+                <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">person</span> Prof. Ricardo Silva</div>
               </div>
-              <span className="material-symbols-outlined text-primary text-xl">trophy</span>
-            </div>
-            <div className="space-y-1 text-gray-300 text-xs font-medium">
-              <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">stadium</span> Arena Central (Casa)</div>
-              <div className="flex items-center gap-2"><span className="material-symbols-outlined text-sm">group</span> Categoria Sub-15</div>
-            </div>
-            <div className="mt-2 pt-3 border-t border-white/10">
-              <p className="text-[10px] text-primary font-bold uppercase">Apresentação: 13:30</p>
+              {event.type === 'Competição' && (
+                <div className="mt-2 pt-3 border-t border-white/10">
+                  <p className="text-[10px] text-primary font-bold uppercase">Apresentação: 13:30</p>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        ))}
       </main>
     </Layout>
   );

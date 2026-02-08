@@ -1,8 +1,14 @@
 import Layout from '../../components/Layout';
 import Header from '../../components/Header';
 import { coachNavItems } from '../../constants/navigation';
+import { useAppContext } from '../../context/AppContext';
 
 export default function Payments() {
+  const { payments, students, markPaymentAsPaid } = useAppContext();
+
+  const totalReceived = payments.filter(p => p.status === 'Pago').reduce((acc, p) => acc + p.amount, 0);
+  const totalPending = payments.filter(p => p.status === 'Pendente').reduce((acc, p) => acc + p.amount, 0);
+
   return (
     <Layout navItems={coachNavItems}>
       <Header
@@ -16,7 +22,7 @@ export default function Payments() {
           <div className="flex flex-col gap-2 rounded-2xl p-5 bg-white shadow-sm border border-black/5">
             <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Recebido</p>
             <div className="flex items-baseline gap-1">
-              <p className="text-2xl font-bold leading-tight">R$ 4.250</p>
+              <p className="text-2xl font-bold leading-tight">R$ {totalReceived}</p>
             </div>
             <div className="w-full h-1.5 bg-primary/10 rounded-full overflow-hidden mt-2">
               <div className="bg-primary h-full w-[75%]"></div>
@@ -25,10 +31,10 @@ export default function Payments() {
           </div>
           <div className="flex flex-col gap-2 rounded-2xl p-5 bg-white shadow-sm border border-black/5">
             <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Pendente</p>
-            <p className="text-2xl font-bold leading-tight text-secondary">R$ 1.150</p>
+            <p className="text-2xl font-bold leading-tight text-secondary">R$ {totalPending}</p>
             <div className="flex items-center gap-1 mt-2">
               <span className="material-symbols-outlined text-sm text-warning font-variation-fill-1">info</span>
-              <span className="text-[10px] text-gray-500">8 mensalidades</span>
+              <span className="text-[10px] text-gray-500">{payments.filter(p => p.status === 'Pendente').length} mensalidades</span>
             </div>
           </div>
         </section>
@@ -51,40 +57,51 @@ export default function Payments() {
           </div>
 
           <div className="space-y-3">
-            {[
-              { name: 'Alex Johnson', cat: 'Sub-12', amount: 'R$ 150', status: 'Pago', date: '12/Ago', success: true },
-              { name: 'Mia Wong', cat: 'Iniciante', amount: 'R$ 150', status: 'Pendente', success: false },
-              { name: 'James Smith', cat: 'Sub-12', amount: 'R$ 150', status: 'Pendente', success: false },
-              { name: 'Sofia Garcia', cat: 'Iniciante', amount: 'R$ 150', status: 'Pago', date: '10/Ago', success: true }
-            ].map((item, idx) => (
-              <div key={idx} className="flex items-center gap-3 bg-white p-3 rounded-2xl shadow-sm border border-black/5">
-                <div className="relative">
-                  <div className="size-12 rounded-full bg-slate-200"></div>
-                  <div className={`absolute -bottom-1 -right-1 size-5 ${item.success ? 'bg-success' : 'bg-warning'} rounded-full border-2 border-white flex items-center justify-center`}>
-                    <span className="material-symbols-outlined text-[10px] text-white font-bold">
-                      {item.success ? 'check' : 'priority_high'}
-                    </span>
+            {payments.filter(p => p.month === 'Outubro 2023').map((payment) => {
+              const student = students.find(s => s.id === payment.studentId);
+              if (!student) return null;
+              const isPaid = payment.status === 'Pago';
+
+              return (
+                <div key={payment.id} className="flex items-center gap-3 bg-white p-3 rounded-2xl shadow-sm border border-black/5">
+                  <div className="relative">
+                    <div className="size-12 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+                      {student.img ? <img src={student.img} alt={student.name} className="w-full h-full object-cover" /> : <span className="material-symbols-outlined text-slate-400">person</span>}
+                    </div>
+                    <div className={`absolute -bottom-1 -right-1 size-5 ${isPaid ? 'bg-success' : 'bg-warning'} rounded-full border-2 border-white flex items-center justify-center`}>
+                      <span className="material-symbols-outlined text-[10px] text-white font-bold">
+                        {isPaid ? 'check' : 'priority_high'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-bold">{student.name}</h4>
+                    <p className="text-[11px] text-gray-500">{student.category} • R$ {payment.amount}</p>
+                  </div>
+                  <div className="text-right px-2">
+                    {isPaid ? (
+                      <>
+                        <span className="text-[10px] font-bold uppercase text-success">Pago</span>
+                        <p className="text-[10px] font-medium text-gray-400">{payment.paymentDate}</p>
+                      </>
+                    ) : (
+                      <div className="flex flex-col gap-1">
+                        <button
+                          onClick={() => markPaymentAsPaid(payment.id)}
+                          className="px-3 py-1 bg-success text-white text-[10px] font-bold rounded-lg shadow-sm active:scale-95 transition-all"
+                        >
+                          Confirmar
+                        </button>
+                        <button className="px-3 h-7 bg-primary text-white text-[10px] font-bold rounded-lg shadow-sm hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-1">
+                          <span className="material-symbols-outlined text-[12px]">notifications</span>
+                          Cobrar
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="flex-1">
-                  <h4 className="text-sm font-bold">{item.name}</h4>
-                  <p className="text-[11px] text-gray-500">{item.cat} • {item.amount}</p>
-                </div>
-                <div className="text-right px-2">
-                  {item.success ? (
-                    <>
-                      <span className="text-[10px] font-bold uppercase text-success">Pago</span>
-                      <p className="text-[10px] font-medium text-gray-400">{item.date}</p>
-                    </>
-                  ) : (
-                    <button className="px-3 h-9 bg-primary text-white text-[11px] font-bold rounded-lg shadow-sm hover:bg-blue-700 active:scale-95 transition-all flex items-center gap-1">
-                      <span className="material-symbols-outlined text-sm">notifications</span>
-                      Lembrete
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
