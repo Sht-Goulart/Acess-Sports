@@ -1,4 +1,3 @@
-
 import { NavLink } from 'react-router-dom';
 
 export interface NavItem {
@@ -14,7 +13,7 @@ interface BottomNavigationProps {
 
 export default function BottomNavigation({ items }: BottomNavigationProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-xl border-t border-gray-100 flex items-center justify-around h-20 px-4 pb-6 z-50">
+    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg bg-white/95 backdrop-blur-xl border-t border-gray-100 flex items-center justify-around h-20 px-4 pb-6 z-50">
       {items.map((item) => (
         <NavLink
           key={item.path}

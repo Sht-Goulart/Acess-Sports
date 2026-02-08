@@ -9,11 +9,15 @@ interface LayoutProps {
 
 export default function Layout({ children, navItems }: LayoutProps) {
   return (
-    <div className="relative flex h-auto min-h-screen w-full max-w-md mx-auto flex-col bg-bg-main overflow-x-hidden shadow-2xl">
-      <main className="flex-1 pb-28">
-        {children}
-      </main>
-      <BottomNavigation items={navItems} />
+    <div className="min-h-screen bg-slate-100 flex justify-center">
+      <div className="relative flex h-auto min-h-screen w-full max-w-lg flex-col bg-bg-main overflow-x-hidden shadow-2xl border-x border-gray-100">
+        <main className="flex-1 pb-28">
+          {children}
+        </main>
+        <div className="w-full max-w-lg">
+          <BottomNavigation items={navItems} />
+        </div>
+      </div>
     </div>
   );
 }
