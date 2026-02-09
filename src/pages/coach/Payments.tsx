@@ -3,8 +3,13 @@ import Header from '../../components/Header';
 import { coachNavItems } from '../../constants/navigation';
 import { useAppContext } from '../../context/AppContext';
 
+import { useState } from 'react';
+
 export default function Payments() {
   const { payments, students, markPaymentAsPaid } = useAppContext();
+  const [filter, setFilter] = useState('Todos');
+  const currentMonthStr = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const currentMonth = currentMonthStr.charAt(0).toUpperCase() + currentMonthStr.slice(1);
 
   const totalReceived = payments.filter(p => p.status === 'Pago').reduce((acc, p) => acc + p.amount, 0);
   const totalPending = payments.filter(p => p.status === 'Pendente').reduce((acc, p) => acc + p.amount, 0);
@@ -40,9 +45,15 @@ export default function Payments() {
         </section>
 
         <nav className="flex p-1 bg-gray-200/50 rounded-xl">
-          {['Todos', 'Pagos', 'Em aberto'].map((tab, idx) => (
+          {['Todos', 'Pagos', 'Em aberto'].map((tab) => (
             <label key={tab} className="flex-1">
-              <input type="radio" name="status-filter" className="hidden peer" defaultChecked={idx === 0} />
+              <input
+                type="radio"
+                name="status-filter"
+                className="hidden peer"
+                checked={filter === tab}
+                onChange={() => setFilter(tab)}
+              />
               <span className="flex items-center justify-center h-9 rounded-lg text-sm font-semibold transition-all cursor-pointer peer-checked:bg-white peer-checked:shadow-sm">
                 {tab}
               </span>
@@ -57,8 +68,15 @@ export default function Payments() {
           </div>
 
           <div className="space-y-3">
-            {payments.filter(p => p.month === 'Outubro 2023').map((payment) => {
-              const student = students.find(s => s.id === payment.studentId);
+            {payments
+              .filter(p => p.month === currentMonth)
+              .filter(p => {
+                if (filter === 'Pagos') return p.status === 'Pago';
+                if (filter === 'Em aberto') return p.status === 'Pendente';
+                return true;
+              })
+              .map((payment) => {
+                const student = students.find(s => s.id === payment.studentId);
               if (!student) return null;
               const isPaid = payment.status === 'Pago';
 

@@ -5,7 +5,9 @@ export const coachNavItems: NavItem[] = [
   { label: 'Desempenho', icon: 'analytics', path: '/coach/performance' },
   { label: 'Avisos', icon: 'campaign', path: '/coach/create-notice' },
   { label: 'Chamada', icon: 'fact_check', path: '/coach/attendance' },
+  { label: 'Usuários', icon: 'manage_accounts', path: '/coach/manage-users' },
   { label: 'Pagamentos', icon: 'payments', path: '/coach/payments' },
+  { label: 'Ajustes', icon: 'settings', path: '/coach/settings' },
 ];
 
 export const studentNavItems: NavItem[] = [

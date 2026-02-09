@@ -1,18 +1,21 @@
+import { useState } from 'react';
 import Layout from '../../components/Layout';
 import Header from '../../components/Header';
+import CalendarWidget from '../../components/CalendarWidget';
 import { studentNavItems } from '../../constants/navigation';
 import { useAppContext } from '../../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function Frequency() {
-  const { students } = useAppContext();
+  const { students, currentUser } = useAppContext();
   const navigate = useNavigate();
-  const alex = students.find(s => s.name === 'Alex Johnson') || students[0];
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const me = students.find(s => s.id === currentUser?.uid);
 
-  const history = alex.attendanceHistory || [];
-  const presences = history.filter(h => h.present).length;
+  const history = me?.attendanceHistory || [];
+  const presences = history.filter((h: any) => h.present).length;
   const total = history.length > 0 ? history.length : 20;
-  const absences = history.filter(h => !h.present).length;
+  const absences = history.filter((h: any) => !h.present).length;
   const percentage = Math.round((presences / total) * 100) || 85;
 
   return (
@@ -29,7 +32,9 @@ export default function Frequency() {
             <div className="absolute -right-8 -top-8 w-32 h-32 bg-primary/20 rounded-full blur-3xl"></div>
             <div className="relative z-10 flex items-center justify-between">
               <div>
-                <p className="text-slate-400 text-sm font-medium">Outubro 2023</p>
+                <p className="text-slate-400 text-sm font-medium">
+                  {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                </p>
                 <h2 className="text-5xl font-bold mt-1">{percentage}<span className="text-primary text-2xl">%</span></h2>
                 <p className="text-xs text-slate-300 mt-2 flex items-center gap-1">
                   <span className="material-symbols-outlined text-primary text-sm font-bold">trending_up</span>
@@ -62,26 +67,9 @@ export default function Frequency() {
         </section>
 
         <section className="px-4 py-2">
-          <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200">
-            <div className="flex items-center justify-between mb-4">
-              <button className="material-symbols-outlined text-slate-900">chevron_left</button>
-              <h3 className="font-bold text-slate-900">Outubro 2023</h3>
-              <button className="material-symbols-outlined text-slate-900">chevron_right</button>
-            </div>
-            <div className="grid grid-cols-7 text-center mb-2 text-[10px] font-bold text-slate-400 uppercase">
-              {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map(d => <span key={d}>{d}</span>)}
-            </div>
-            <div className="grid grid-cols-7 gap-y-2">
-              <div className="h-10"></div><div className="h-10"></div><div className="h-10"></div><div className="h-10"></div><div className="h-10"></div><div className="h-10"></div>
-              <button className="h-10 w-10 mx-auto flex items-center justify-center rounded-full text-sm font-medium text-slate-400">1</button>
-              <button className={`h-10 w-10 mx-auto flex items-center justify-center rounded-full text-sm font-bold ${alex.present ? 'bg-primary text-white' : 'bg-red-500 text-white'}`}>2</button>
-              {[3, 4, 6, 9, 10, 12, 13].map(n => (
-                <button key={n} className="h-10 w-10 mx-auto flex items-center justify-center rounded-full text-sm font-medium bg-blue-100 text-primary">{n}</button>
-              ))}
-              {[5, 11].map(n => (
-                <button key={n} className="h-10 w-10 mx-auto flex items-center justify-center rounded-full text-sm font-medium bg-red-100 text-red-600">{n}</button>
-              ))}
-            </div>
+          <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
+            <CalendarWidget selectedDate={selectedDate} onDateChange={setSelectedDate} />
+
             <div className="mt-6 flex gap-4 text-[10px] font-bold text-slate-500 justify-center">
               <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary"></span> PRESENÇA</div>
               <div className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"></span> FALTA</div>
@@ -92,24 +80,30 @@ export default function Frequency() {
 
         <section className="px-4 py-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-slate-900">Histórico Recente</h3>
-            <button className="text-xs font-bold text-primary">Ver Tudo</button>
+            <h3 className="text-lg font-bold text-slate-900">
+              Status em {selectedDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+            </h3>
           </div>
           <div className="space-y-3">
-            {history.map((item, idx) => (
-              <div key={idx} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 ios-shadow transition-all">
-                <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-primary">sports_soccer</span>
+            {history
+              .filter((h: any) => h.date === selectedDate.toISOString().split('T')[0])
+              .map((item: any, idx: number) => (
+                <div key={idx} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 ios-shadow transition-all">
+                  <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-primary">sports_soccer</span>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-slate-900 text-sm">Registro de Chamada</h4>
+                    <p className="text-xs text-slate-500">{item.date}</p>
+                  </div>
+                  <div className={`px-3 py-1 rounded-full ${item.present ? 'bg-blue-100 text-primary' : 'bg-red-50 text-red-600'} border border-gray-100`}>
+                    <span className={`text-[10px] font-bold`}>{item.present ? 'PRESENTE' : 'FALTA'}</span>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-bold text-slate-900 text-sm">Treino de Futebol</h4>
-                  <p className="text-xs text-slate-500">{item.date}</p>
-                </div>
-                <div className={`px-3 py-1 rounded-full ${item.present ? 'bg-blue-100 text-primary' : 'bg-red-50 text-red-600'} border border-gray-100`}>
-                  <span className={`text-[10px] font-bold`}>{item.present ? 'PRESENTE' : 'FALTA'}</span>
-                </div>
-              </div>
-            ))}
+              ))}
+            {history.filter((h: any) => h.date === selectedDate.toISOString().split('T')[0]).length === 0 && (
+              <p className="text-center text-gray-400 text-sm py-4">Nenhum registro para este dia.</p>
+            )}
           </div>
         </section>
       </main>

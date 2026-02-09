@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Layout from '../../components/Layout';
 import Header from '../../components/Header';
 import { coachNavItems } from '../../constants/navigation';
@@ -6,11 +6,13 @@ import { useAppContext } from '../../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function CreateNotice() {
-  const { addNotice } = useAppContext();
+  const { addNotice, categories } = useAppContext();
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(['Sub-12', 'Adulto']);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const toggleCategory = (cat: string) => {
     if (selectedCategories.includes(cat)) {
@@ -20,8 +22,15 @@ export default function CreateNotice() {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
   const handlePublish = () => {
     if (!title || !description) return alert('Por favor, preencha o título e a descrição.');
+    if (selectedCategories.length === 0) return alert('Selecione pelo menos uma categoria.');
 
     addNotice({
       title,
@@ -31,8 +40,8 @@ export default function CreateNotice() {
       urgent: title.toLowerCase().includes('urgente')
     });
 
-    alert('Aviso publicado com sucesso!');
-    navigate('/coach/calendar'); // Go back to calendar or somewhere else
+    alert('Aviso publicado com sucesso!' + (selectedFile ? ` (Arquivo ${selectedFile.name} anexado - Simulação)` : ''));
+    navigate('/student/notices');
   };
 
   return (
@@ -89,33 +98,48 @@ export default function CreateNotice() {
         <div className="space-y-3">
           <div className="flex justify-between items-center px-1">
             <span className="text-sm font-bold text-black">Categorias de Alunos</span>
-            <button className="text-xs font-bold text-primary uppercase tracking-wider" onClick={() => setSelectedCategories(['Sub-12', 'Sub-15', 'Iniciantes', 'Adulto', 'Competição'])}>Selecionar Todas</button>
+            <button className="text-xs font-bold text-primary uppercase tracking-wider" onClick={() => setSelectedCategories(categories.map(c => c.name))}>Selecionar Todas</button>
           </div>
+
           <div className="flex flex-wrap gap-2">
-            {['Sub-12', 'Sub-15', 'Iniciantes', 'Adulto', 'Competição'].map(cat => {
-              const isSelected = selectedCategories.includes(cat);
+            {categories.map(cat => {
+              const isSelected = selectedCategories.includes(cat.name);
               return (
                 <button
-                  key={cat}
-                  onClick={() => toggleCategory(cat)}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                    isSelected ? 'bg-primary text-white' : 'bg-white border border-gray-200 text-black hover:border-primary/50'
+                  key={cat.id}
+                  onClick={() => toggleCategory(cat.name)}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all border ${
+                    isSelected ? 'bg-primary text-white border-primary' : 'bg-white border-gray-200 text-black hover:border-primary/50'
                   }`}
                 >
-                  <span>{cat}</span>
+                  <span>{cat.name}</span>
                   {isSelected && <span className="material-symbols-outlined text-sm">check_circle</span>}
                 </button>
               );
             })}
-            <button className="flex items-center justify-center size-9 bg-gray-100 rounded-full text-black hover:bg-gray-200 transition-colors">
-              <span className="material-symbols-outlined">add</span>
-            </button>
           </div>
         </div>
 
-        <div className="p-4 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-2 group cursor-pointer hover:bg-primary/5 transition-all">
-          <span className="material-symbols-outlined text-3xl text-gray-400">attach_file</span>
-          <p className="text-sm font-medium text-gray-500">Adicionar anexo (PDF, Imagem)</p>
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          accept="image/png, application/pdf"
+          onChange={handleFileChange}
+        />
+
+        <div
+          onClick={() => fileInputRef.current?.click()}
+          className={`p-4 rounded-xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-2 cursor-pointer ${
+            selectedFile ? 'border-primary bg-primary/5' : 'border-gray-200 hover:bg-primary/5'
+          }`}
+        >
+          <span className={`material-symbols-outlined text-3xl ${selectedFile ? 'text-primary' : 'text-gray-400'}`}>
+            {selectedFile ? 'task' : 'attach_file'}
+          </span>
+          <p className={`text-sm font-medium ${selectedFile ? 'text-primary' : 'text-gray-500'}`}>
+            {selectedFile ? `Arquivo selecionado: ${selectedFile.name}` : 'Adicionar anexo (PDF, PNG)'}
+          </p>
         </div>
       </main>
 

@@ -1,7 +1,12 @@
 import { useState } from 'react';
 
-export default function CalendarWidget() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+interface CalendarWidgetProps {
+  selectedDate?: Date;
+  onDateChange?: (date: Date) => void;
+}
+
+export default function CalendarWidget({ selectedDate, onDateChange }: CalendarWidgetProps) {
+  const [currentDate, setCurrentDate] = useState(selectedDate || new Date());
 
   const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
@@ -20,7 +25,6 @@ export default function CalendarWidget() {
   const totalDays = daysInMonth(year, month);
   const startDay = firstDayOfMonth(year, month);
   const today = new Date();
-  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
 
   const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
@@ -29,7 +33,7 @@ export default function CalendarWidget() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <p className="text-lg font-bold">{monthNames[month]} {year}</p>
-          <span className="material-symbols-outlined text-sm">expand_more</span>
+          <span className="material-symbols-outlined text-sm cursor-pointer">expand_more</span>
         </div>
         <div className="flex gap-3">
           <button onClick={prevMonth} className="p-1 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
@@ -52,16 +56,22 @@ export default function CalendarWidget() {
 
         {Array.from({ length: totalDays }).map((_, i) => {
           const day = i + 1;
-          const isToday = isCurrentMonth && today.getDate() === day;
+          const d = new Date(year, month, day);
+          const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+          const isSelected = selectedDate && selectedDate.getFullYear() === year && selectedDate.getMonth() === month && selectedDate.getDate() === day;
+
           return (
             <button
               key={day}
+              onClick={() => onDateChange && onDateChange(d)}
               className={`h-12 flex flex-col items-center justify-center rounded-xl text-sm transition-all ${
-                isToday ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' : 'hover:bg-gray-100'
+                isSelected ? 'bg-primary text-white font-bold shadow-lg shadow-primary/20' :
+                isToday ? 'bg-primary/20 text-primary font-bold' : 'hover:bg-gray-100 text-gray-700'
               }`}
             >
               <span>{day}</span>
-              {isToday && <div className="w-1 h-1 bg-white rounded-full mt-1"></div>}
+              {isToday && !isSelected && <div className="w-1 h-1 bg-primary rounded-full mt-1"></div>}
+              {isSelected && <div className="w-1 h-1 bg-white rounded-full mt-1"></div>}
             </button>
           );
         })}
